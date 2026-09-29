@@ -5,6 +5,7 @@
 [![Angular 22](https://img.shields.io/badge/Angular-22-DD0031?logo=angular&logoColor=white)](https://angular.dev/)
 [![SQL Server](https://img.shields.io/badge/SQL_Server-2022-CC2927?logo=microsoftsqlserver&logoColor=white)](https://www.microsoft.com/sql-server)
 [![AWS Architecture](https://img.shields.io/badge/AWS-reference_architecture-FF9900?logo=amazonwebservices&logoColor=white)](docs/aws-architecture.md)
+[![Live demo](https://img.shields.io/badge/Render-live-62F2BD?logo=render&logoColor=white)](https://dbvc-platform.onrender.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-62F2BD.svg)](LICENSE)
 
 DBVC is a guarded SQL Server migration control plane. It validates numbered migrations, produces SHA-256 evidence manifests, verifies pending changes inside a rolled-back transaction, requires a recoverable backup before apply, and records exactly what was delivered.
@@ -47,6 +48,8 @@ docs/              Architecture and operating guides
 ```
 
 ## Run the public demo locally
+
+Explore the hosted dashboard at **[dbvc-platform.onrender.com](https://dbvc-platform.onrender.com)**, or run the same production container locally:
 
 ```bash
 docker compose up --build app
