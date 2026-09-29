@@ -1,0 +1,92 @@
+<div class="app-shell">
+  <header class="topbar">
+    <a class="brand" href="#top" aria-label="DBVC home">
+      <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+      <span><strong>DBVC</strong><small>Database Version Control</small></span>
+    </a>
+    <nav aria-label="Primary navigation"><a href="#pipeline">Pipeline</a><a href="#migrations">Migrations</a><a href="#architecture">AWS architecture</a></nav>
+    <a class="github-link" href="https://github.com/MontassarBenMesmia/dbvc-platform" target="_blank" rel="noreferrer">View source</a>
+  </header>
+
+  <main id="top" *ngIf="dashboard as data; else loadingState">
+    <section class="hero">
+      <div class="hero-copy">
+        <div class="eyebrow"><span class="pulse"></span> SQL Server delivery control plane</div>
+        <h1>Ship database changes<br><span>like application code.</span></h1>
+        <p>DBVC turns numbered SQL migrations into checksum-protected, reviewable delivery plans with rollback verification, recovery evidence, and a guarded apply path.</p>
+        <div class="hero-actions">
+          <button type="button" class="primary-action" (click)="runVerification()" [disabled]="running"><span>{{ running ? 'Verifying…' : 'Run guarded verification' }}</span><span aria-hidden="true">→</span></button>
+          <a class="secondary-action" href="#pipeline">Explore the pipeline</a>
+        </div>
+        <div class="demo-note">Public demo • fictional schema • no database credentials • no writes</div>
+      </div>
+
+      <article class="terminal-card" aria-label="Latest verification evidence">
+        <div class="terminal-head"><div><span></span><span></span><span></span></div><small>verification evidence</small></div>
+        <div class="terminal-body">
+          <div class="terminal-line muted">$ dbvc verify --target demo</div>
+          <div class="terminal-line"><span class="ok">✓</span> Migration sequence valid</div>
+          <div class="terminal-line"><span class="ok">✓</span> SHA-256 checksums match</div>
+          <div class="terminal-line"><span class="ok">✓</span> Rollback coverage 100%</div>
+          <div class="terminal-line"><span class="ok">✓</span> Transaction replay succeeded</div>
+          <div class="terminal-line accent">ROLLBACK completed — target unchanged</div>
+        </div>
+        <div class="run-evidence" *ngIf="latestRun">
+          <div><small>Run</small><strong>{{ latestRun.runId }}</strong></div>
+          <div><small>Status</small><strong class="verified">{{ latestRun.status }}</strong></div>
+          <div><small>Duration</small><strong>{{ latestRun.durationMs }} ms</strong></div>
+        </div>
+      </article>
+    </section>
+
+    <section class="metrics" aria-label="Engineering metrics">
+      <article><small>Migrations tracked</small><strong>{{ data.metrics.migrationsTracked }}</strong><span>ordered and immutable</span></article>
+      <article><small>Checksum coverage</small><strong>{{ data.metrics.checksumCoverage }}%</strong><span>SHA-256 evidence</span></article>
+      <article><small>Rollback coverage</small><strong>{{ data.metrics.rollbackCoverage }}%</strong><span>paired down scripts</span></article>
+      <article><small>Pending changes</small><strong>{{ data.metrics.pendingMigrations }}</strong><span>ready for verification</span></article>
+    </section>
+
+    <section class="section-block" id="pipeline">
+      <div class="section-heading"><div><span class="section-index">01</span><h2>Guarded delivery pipeline</h2></div><p>Each gate produces evidence before the next gate can mutate a target.</p></div>
+      <div class="pipeline-grid">
+        <article class="pipeline-step" *ngFor="let step of data.pipeline; let last = last">
+          <div class="step-number">{{ step.step.toString().padStart(2, '0') }}</div><div class="step-icon">{{ pipelineIcon(step.step) }}</div>
+          <h3>{{ step.name }}</h3><p>{{ step.detail }}</p><span class="connector" *ngIf="!last" aria-hidden="true">→</span>
+        </article>
+      </div>
+    </section>
+
+    <section class="content-grid" id="migrations">
+      <article class="panel migration-panel">
+        <div class="panel-heading"><div><span class="section-index">02</span><h2>Migration ledger</h2></div><span class="environment-badge">{{ data.environment }}</span></div>
+        <div class="migration-table" role="table" aria-label="Migration ledger">
+          <div class="migration-row migration-header" role="row"><span>Version</span><span>Change</span><span>Checksum</span><span>Status</span></div>
+          <div class="migration-row" role="row" *ngFor="let migration of data.migrations">
+            <strong>{{ migration.version }}</strong><span>{{ migration.name }}</span><code>{{ migration.checksum }}</code><span class="state-pill" [class.pending]="migration.status === 'pending'">{{ migration.status }}</span>
+          </div>
+        </div>
+      </article>
+      <article class="panel safeguards-panel">
+        <div class="panel-heading"><div><span class="section-index">03</span><h2>Safety contract</h2></div></div>
+        <ul><li *ngFor="let safeguard of data.safeguards"><span>✓</span>{{ safeguard }}</li></ul>
+      </article>
+    </section>
+
+    <section class="section-block architecture" id="architecture">
+      <div class="section-heading"><div><span class="section-index">04</span><h2>AWS reference architecture</h2></div><p>Separated control and execution planes keep credentials and SQL Server traffic private.</p></div>
+      <div class="architecture-map">
+        <div class="architecture-lane"><small>EDGE</small><div class="service-box"><b>CloudFront + WAF</b><span>Protected global entry</span></div><div class="service-box"><b>S3 web application</b><span>Immutable Angular assets</span></div></div>
+        <span class="architecture-arrow">→</span>
+        <div class="architecture-lane"><small>CONTROL PLANE</small><div class="service-box"><b>Cognito + ALB</b><span>Identity and routing</span></div><div class="service-box"><b>ECS API</b><span>Plans and approvals</span></div></div>
+        <span class="architecture-arrow">→</span>
+        <div class="architecture-lane emphasized"><small>EXECUTION PLANE</small><div class="service-box"><b>SQS + ECS worker</b><span>PowerShell 7 and sqlcmd</span></div><div class="service-box"><b>RDS SQL Server</b><span>Private subnets only</span></div></div>
+        <span class="architecture-arrow">→</span>
+        <div class="architecture-lane"><small>EVIDENCE</small><div class="service-box"><b>S3 + KMS</b><span>Manifests and backups</span></div><div class="service-box"><b>CloudWatch + CloudTrail</b><span>Metrics and audit</span></div></div>
+      </div>
+      <div class="architecture-foot"><span>Secrets Manager</span><span>DynamoDB locks</span><span>VPC endpoints</span><span>GitHub OIDC</span><span>Least-privilege IAM</span></div>
+    </section>
+  </main>
+
+  <ng-template #loadingState><main class="loading-state"><div class="loader"></div><p>{{ errorMessage || 'Loading DBVC control plane…' }}</p><button *ngIf="errorMessage" type="button" (click)="loadDashboard()">Try again</button></main></ng-template>
+  <footer><span>DBVC • Public-safe portfolio edition</span><span>Angular · Node.js · PowerShell · SQL Server · AWS</span></footer>
+</div>

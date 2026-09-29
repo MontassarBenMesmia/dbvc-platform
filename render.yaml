@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: dbvc-platform
+    runtime: docker
+    plan: free
+    repo: https://github.com/MontassarBenMesmia/dbvc-platform
+    branch: main
+    healthCheckPath: /api/v1/health
+    autoDeployTrigger: checksPass
