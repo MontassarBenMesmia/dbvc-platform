@@ -1,11 +1,13 @@
-FROM node:22-alpine AS frontend-build
+FROM node:22.23.4-alpine AS frontend-build
+RUN apk add --no-cache --upgrade ca-certificates
 WORKDIR /workspace/frontend
 COPY frontend/package*.json ./
 RUN npm ci
 COPY frontend/ ./
 RUN npm run build
 
-FROM node:22-alpine AS runtime
+FROM node:22.23.4-alpine AS runtime
+RUN apk add --no-cache --upgrade ca-certificates
 ENV NODE_ENV=production
 WORKDIR /app
 RUN addgroup -S dbvc && adduser -S dbvc -G dbvc
